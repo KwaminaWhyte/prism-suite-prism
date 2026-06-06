@@ -17,12 +17,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
   synthesis), `tone::dodge_burn` (local lighten/darken), `tone::sponge`
   (saturation), `detail::blur_sharpen` (local blur/sharpen), and `warp`
   (displacement-field mesh warp + brush stamps, for Liquify).
-- `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data).
+- `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data);
+  `adjust::{Vibrance, PhotoFilter, Posterize}` adjustment variants.
 
 ### Per-app progress (see each app's changelog)
 - **Pigment** — Curves adjustment (GPU LUT); **Phase-6 retouch core**: Clone Stamp,
   Healing Brush, Spot Healing, Content-Aware Fill, Dodge & Burn, Liquify,
-  **Detail brush** (sponge/blur/sharpen).
+  Detail brush (sponge/blur/sharpen); **Phase-7 adjustments**: Vibrance, Photo
+  Filter, Posterize.
 - **Contour** — undo/redo; direct-select path editing; stroke options
   (caps/joins/dashes); **multi-select + Align & Distribute**.
 - **Pulse** — keyframe interpolation; graph editor; PNG image-sequence export +

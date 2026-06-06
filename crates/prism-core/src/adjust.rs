@@ -57,6 +57,12 @@ pub enum Adjustment {
     /// Tone curves (composite + per-channel). Params are not float-encodable —
     /// the compositor uploads a LUT texture (shader kind `8`) built from these.
     Curves(CurvePoints),
+    /// Saturation boost weighted toward less-saturated pixels. `amount` −1..1.
+    Vibrance { amount: f32 },
+    /// Warming/cooling color filter; `color` is straight sRGB, `density` 0..1.
+    PhotoFilter { color: [f32; 3], density: f32 },
+    /// Quantize each channel to `levels` steps (2..=255).
+    Posterize { levels: u32 },
 }
 
 impl Adjustment {
@@ -83,6 +89,11 @@ impl Adjustment {
             Adjustment::Threshold { level } => (6, [*level, 0.0, 0.0, 0.0]),
             Adjustment::BlackWhite => (7, [0.0; 4]),
             Adjustment::Curves(_) => (8, [0.0; 4]),
+            Adjustment::Vibrance { amount } => (9, [*amount, 0.0, 0.0, 0.0]),
+            Adjustment::PhotoFilter { color, density } => {
+                (10, [color[0], color[1], color[2], *density])
+            }
+            Adjustment::Posterize { levels } => (11, [*levels as f32, 0.0, 0.0, 0.0]),
         }
     }
 
@@ -96,6 +107,9 @@ impl Adjustment {
             Adjustment::Threshold { .. } => "Threshold",
             Adjustment::BlackWhite => "Black & White",
             Adjustment::Curves(_) => "Curves",
+            Adjustment::Vibrance { .. } => "Vibrance",
+            Adjustment::PhotoFilter { .. } => "Photo Filter",
+            Adjustment::Posterize { .. } => "Posterize",
         }
     }
 
@@ -119,6 +133,12 @@ impl Adjustment {
                 lightness: 0.0,
             },
             Adjustment::Exposure { stops: 0.0 },
+            Adjustment::Vibrance { amount: 0.0 },
+            Adjustment::PhotoFilter {
+                color: [1.0, 0.64, 0.0], // warming (85)
+                density: 0.25,
+            },
+            Adjustment::Posterize { levels: 4 },
             Adjustment::Invert,
             Adjustment::Threshold { level: 0.5 },
             Adjustment::BlackWhite,
