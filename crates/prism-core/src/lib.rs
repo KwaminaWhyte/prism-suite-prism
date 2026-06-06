@@ -11,6 +11,7 @@ pub mod curve;
 pub mod document;
 pub mod fill;
 pub mod geometry;
+pub mod heal;
 pub mod histogram;
 pub mod layer;
 pub mod raster;

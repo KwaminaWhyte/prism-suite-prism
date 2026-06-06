@@ -11,16 +11,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ### Added
 - Per-app `CHANGELOG.md` files (this file + one per app) to track work over time.
+- `prism-core` — `heal::seamless_clone`: gradient-domain Poisson cloning (membrane
+  solve), the shared primitive behind Pigment's Healing Brush.
+- `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data).
 
 ### Per-app progress (see each app's changelog)
-- **Pigment** — Curves adjustment (composite + per-channel, GPU LUT); Clone Stamp
-  tool (Phase 6 retouch).
+- **Pigment** — Curves adjustment (composite + per-channel, GPU LUT); Clone Stamp;
+  **Healing Brush** (gradient-domain Poisson retouch).
 - **Contour** — undo/redo history stack; direct-select path editing (add/delete/
-  convert anchors).
+  convert anchors); **stroke options** (caps/joins/dashes).
 - **Pulse** — keyframe interpolation (linear/hold/Bézier ease); graph editor
-  (draggable keys + ease handles).
-- **Reel** — source in/out + ripple/roll/slip/slide editing tools; transitions
-  (cross-dissolve, dip-to-color).
+  (draggable keys + ease handles); **PNG image-sequence export** + software compositor.
+- **Reel** — source in/out + ripple/roll/slip/slide editing; transitions
+  (cross-dissolve, dip-to-color); **per-clip transform/opacity/crop + inspector**.
 
 ## [0.0.1] - 2026-06-06
 
