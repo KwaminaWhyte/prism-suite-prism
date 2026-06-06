@@ -8,7 +8,7 @@ members = ["crates/prism-color", "crates/prism-core", "crates/prism-io"]
 version = "0.0.1"
 edition = "2021"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/prism-suite/prism"
+repository = "https://github.com/KwaminaWhyte/prism-suite-prism"
 
 [workspace.dependencies]
 glam = "0.29"
