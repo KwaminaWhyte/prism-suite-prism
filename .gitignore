@@ -6,3 +6,7 @@ pigment/
 contour/
 pulse/
 reel/
+# dev-machine-only self-symlink so this nested checkout resolves the apps'
+# `../prism-suite-prism/crates` path deps. NOT needed on a fresh clone where
+# prism-suite-prism is a real sibling dir.
+/prism-suite-prism
