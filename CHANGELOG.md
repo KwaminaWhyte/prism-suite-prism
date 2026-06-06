@@ -11,14 +11,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ### Added
 - Per-app `CHANGELOG.md` files (this file + one per app) to track work over time.
-- `prism-core` — `heal::seamless_clone` (gradient-domain Poisson cloning) and
-  `heal::spot_heal` (auto-source blemish repair): the shared primitives behind
-  Pigment's Healing Brush and Spot Healing.
+- `prism-core` — `heal::seamless_clone` (gradient-domain Poisson cloning),
+  `heal::spot_heal` (auto-source blemish repair), and `inpaint::content_aware_fill`
+  (PatchMatch synthesis): the shared retouch primitives behind Pigment's Healing
+  Brush, Spot Healing, and Content-Aware Fill.
 - `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data).
 
 ### Per-app progress (see each app's changelog)
 - **Pigment** — Curves adjustment (composite + per-channel, GPU LUT); Clone Stamp;
-  Healing Brush (gradient-domain Poisson); **Spot Healing** (auto-source repair).
+  Healing Brush (gradient-domain Poisson); Spot Healing (auto-source);
+  **Content-Aware Fill** (PatchMatch synthesis).
 - **Contour** — undo/redo history stack; direct-select path editing (add/delete/
   convert anchors); **stroke options** (caps/joins/dashes).
 - **Pulse** — keyframe interpolation (linear/hold/Bézier ease); graph editor

@@ -13,6 +13,7 @@ pub mod fill;
 pub mod geometry;
 pub mod heal;
 pub mod histogram;
+pub mod inpaint;
 pub mod layer;
 pub mod raster;
 pub mod shape;
