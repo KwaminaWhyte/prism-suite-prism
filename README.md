@@ -14,15 +14,18 @@ smart objects, common color pipeline).
 
 | # | App | Adobe analog | Domain | Status |
 |---|-----|--------------|--------|--------|
-| 1 | **[Pigment](./pigment/)** | Photoshop | Raster image editing | 🟢 Phases 0–5; can **Place `.contour`** docs |
+| 1 | **[Pigment](./pigment/)** | Photoshop | Raster image editing | 🟢 Phases 0–5; **live-links** `.contour` docs |
 | 2 | **[Contour](./contour/)** | Illustrator | Vector graphics | 🟢 v0 — rect/ellipse/line/**bezier pen**, **SVG/PNG export**, layers, **boolean ops** |
 | 3 | **[Pulse](./pulse/)** | After Effects | Motion graphics / VFX | 🟢 v0 — **keyframe timeline** + animated preview |
-| 4 | **Reel** | Premiere Pro | Video editing (NLE) | ⚪ planned |
+| 4 | **[Reel](./reel/)** | Premiere Pro | Video editing (NLE) | 🟢 v0 — **multitrack timeline**, clips, preview (FFmpeg decode TBD) |
 
-All apps share the suite engine in [`crates/`](./crates/): **`prism-color`** (sRGB/linear,
-Rgba), **`prism-core`** (document/scene model, layers, blend, tiles, shape/curve/histogram),
-**`prism-io`** (image/psd/exr/text/export). First cross-app link landed: Pigment rasterizes a
-Contour `.contour` artboard into a layer.
+**All four apps exist and run**, sharing the suite engine in [`crates/`](./crates/):
+**`prism-color`** (sRGB/linear, Rgba), **`prism-core`** (document/scene model, layers, blend,
+tiles, shape/curve/histogram), **`prism-io`** (image/psd/exr/text/export).
+
+**Cross-app interop:** Pigment **Dynamic-Links** a Contour `.contour` artboard — placed as a
+rasterized layer that **re-renders automatically when the source file changes**. Edit in
+Contour → save → Pigment updates.
 
 ## Repository layout
 
@@ -33,7 +36,7 @@ prism/
 ├── pigment/           app #1 — raster editor (own git repo)
 ├── contour/           app #2 — vector editor (own git repo)
 ├── pulse/             app #3 — motion graphics (own git repo)
-└── reel/              app #4 — video NLE (planned)
+└── reel/              app #4 — video NLE (own git repo)
 ```
 
 Each app is its own Cargo workspace + git repo for now. As the shared engine
