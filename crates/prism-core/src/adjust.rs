@@ -63,6 +63,9 @@ pub enum Adjustment {
     PhotoFilter { color: [f32; 3], density: f32 },
     /// Quantize each channel to `levels` steps (2..=255).
     Posterize { levels: u32 },
+    /// Map luminance through a two-color gradient (`low` = shadows, `high` =
+    /// highlights), straight sRGB. The compositor builds + samples a LUT texture.
+    GradientMap { low: [f32; 3], high: [f32; 3] },
 }
 
 impl Adjustment {
@@ -94,6 +97,7 @@ impl Adjustment {
                 (10, [color[0], color[1], color[2], *density])
             }
             Adjustment::Posterize { levels } => (11, [*levels as f32, 0.0, 0.0, 0.0]),
+            Adjustment::GradientMap { .. } => (12, [0.0; 4]),
         }
     }
 
@@ -110,6 +114,7 @@ impl Adjustment {
             Adjustment::Vibrance { .. } => "Vibrance",
             Adjustment::PhotoFilter { .. } => "Photo Filter",
             Adjustment::Posterize { .. } => "Posterize",
+            Adjustment::GradientMap { .. } => "Gradient Map",
         }
     }
 
@@ -139,6 +144,10 @@ impl Adjustment {
                 density: 0.25,
             },
             Adjustment::Posterize { levels: 4 },
+            Adjustment::GradientMap {
+                low: [0.05, 0.0, 0.2],  // deep indigo shadows
+                high: [1.0, 0.85, 0.4], // warm highlights
+            },
             Adjustment::Invert,
             Adjustment::Threshold { level: 0.5 },
             Adjustment::BlackWhite,
