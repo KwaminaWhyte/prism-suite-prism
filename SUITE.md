@@ -76,10 +76,10 @@ shared-engine + interop research).
 
 | App | Analog | Built today | ~Parity | Plan |
 |---|---|---|---|---|
-| **Pigment** | Photoshop | GPU compositor, layers/blend, brush, selection/transform, adjustments/masks/filters, text/vector basics, PSD/EXR IO | ~60% | [pigment/PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/PLAN.md) |
-| **Contour** | Illustrator | Bézier pen, shapes, pathfinder, SVG/PNG export, save | ~25% | [contour/PLAN.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/PLAN.md) |
-| **Pulse** | After Effects | Comp + keyframe timeline, animated solid preview, save | ~10% | [pulse/PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/PLAN.md) |
-| **Reel** | Premiere Pro | Multitrack timeline, clip move/trim, stills preview, bin, save | ~8% | [reel/PLAN.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/PLAN.md) |
+| **Pigment** | Photoshop | GPU compositor, layers/blend, brush, selection/transform, adjustments/masks/filters, text/vector basics, PSD/EXR IO | ~60% | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/PLAN.md) |
+| **Contour** | Illustrator | Bézier pen, shapes, pathfinder, SVG/PNG export, save | ~25% | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/PLAN.md) |
+| **Pulse** | After Effects | Comp + keyframe timeline, animated solid preview, save | ~10% | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/PLAN.md) |
+| **Reel** | Premiere Pro | Multitrack timeline, clip move/trim, stills preview, bin, save | ~8% | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/PLAN.md) |
 
 **Next levers (foundation-first — build what gates breadth, then fan out):**
 
