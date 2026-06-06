@@ -15,10 +15,10 @@ suite-level research (shared crate matrix, interop mechanisms, color & AI policy
 
 | # | App | Adobe analog | Domain | Status |
 |---|-----|--------------|--------|--------|
-| 1 | **[Pigment](./pigment/)** | Photoshop | Raster image editing | 🟢 Phases 0–5; **live-links** `.contour` docs |
-| 2 | **[Contour](./contour/)** | Illustrator | Vector graphics | 🟢 v0 — rect/ellipse/line/**bezier pen**, **SVG/PNG export**, layers, **boolean ops** |
-| 3 | **[Pulse](./pulse/)** | After Effects | Motion graphics / VFX | 🟢 v0 — **keyframe timeline** + animated preview |
-| 4 | **[Reel](./reel/)** | Premiere Pro | Video editing (NLE) | 🟢 v0 — **multitrack timeline**, clips, preview (FFmpeg decode TBD) |
+| 1 | **[Pigment](https://github.com/KwaminaWhyte/prism-suite-pigment)** | Photoshop | Raster image editing | 🟢 Phases 0–5; **live-links** `.contour` docs |
+| 2 | **[Contour](https://github.com/KwaminaWhyte/prism-suite-contour)** | Illustrator | Vector graphics | 🟢 v0 — rect/ellipse/line/**bezier pen**, **SVG/PNG export**, layers, **boolean ops** |
+| 3 | **[Pulse](https://github.com/KwaminaWhyte/prism-suite-pulse)** | After Effects | Motion graphics / VFX | 🟢 v0 — **keyframe timeline** + animated preview |
+| 4 | **[Reel](https://github.com/KwaminaWhyte/prism-suite-reel)** | Premiere Pro | Video editing (NLE) | 🟢 v0 — **multitrack timeline**, clips, preview (FFmpeg decode TBD) |
 
 **All four apps exist and run**, sharing the suite engine in [`crates/`](./crates/):
 **`prism-color`** (sRGB/linear, Rgba), **`prism-core`** (document/scene model, layers, blend,
@@ -34,10 +34,10 @@ Every app has a parity roadmap to **≥85% of its Adobe analog** plus cited rese
 
 | App | Plan | Research |
 |---|---|---|
-| Pigment | [PLAN.md](./pigment/PLAN.md) | [RESEARCH.md](./pigment/RESEARCH.md) · [ARCHITECTURE.md](./pigment/ARCHITECTURE.md) |
-| Contour | [PLAN.md](./contour/PLAN.md) | [RESEARCH.md](./contour/RESEARCH.md) |
-| Pulse | [PLAN.md](./pulse/PLAN.md) | [RESEARCH.md](./pulse/RESEARCH.md) |
-| Reel | [PLAN.md](./reel/PLAN.md) | [RESEARCH.md](./reel/RESEARCH.md) |
+| Pigment | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/PLAN.md) | [RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) · [ARCHITECTURE.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/ARCHITECTURE.md) |
+| Contour | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/PLAN.md) | [RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/RESEARCH.md) |
+| Pulse | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/PLAN.md) | [RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) |
+| Reel | [PLAN.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/PLAN.md) | [RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md) |
 | **Suite** | [SUITE.md](./SUITE.md) | [RESEARCH.md](./RESEARCH.md) |
 
 Each plan grounds its phases in the app's *current* code, marks done vs planned, and tags effort

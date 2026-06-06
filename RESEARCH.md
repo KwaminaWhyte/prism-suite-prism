@@ -4,10 +4,10 @@ Suite-level research backing [SUITE.md](./SUITE.md) (vision + interop) and the f
 covers the **shared engine, the interop mechanisms, and the cross-cutting policies** (color, AI) that all
 four apps inherit. App-specific findings live in each app's own `RESEARCH.md`:
 
-- [pigment/RESEARCH.md](./pigment/RESEARCH.md) — raster engine, compositor, blend math, brush, color IO, AI tools
-- [contour/RESEARCH.md](./contour/RESEARCH.md) — vector path engine, booleans, SVG/PDF, image trace, gradients
-- [pulse/RESEARCH.md](./pulse/RESEARCH.md) — time-addressable compositing, keyframes/expressions, effects, media
-- [reel/RESEARCH.md](./reel/RESEARCH.md) — NLE editing model, video/audio decode, transitions, color, export
+- [pigment/RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) — raster engine, compositor, blend math, brush, color IO, AI tools
+- [contour/RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/RESEARCH.md) — vector path engine, booleans, SVG/PDF, image trace, gradients
+- [pulse/RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) — time-addressable compositing, keyframes/expressions, effects, media
+- [reel/RESEARCH.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md) — NLE editing model, video/audio decode, transitions, color, export
 
 > Verify every crate version against crates.io at build time — third-party version metadata is sometimes
 > stale. `wgpu` confirmed at **29.0.3** (2026-05-02); the `"29"` pin holds suite-wide.
