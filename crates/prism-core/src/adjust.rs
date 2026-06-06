@@ -4,7 +4,33 @@
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+/// Per-channel control points for a Curves adjustment. Each `Vec` is a set of
+/// `(input, output)` knots in `[0, 1]`; identity is `[(0,0), (1,1)]`. `rgb` is
+/// the composite (master) curve applied to every channel first, then the
+/// per-channel `r`/`g`/`b` curves. Rasterized to a 256-entry LUT via
+/// [`crate::curve::build_lut`] and sampled in the compositor.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct CurvePoints {
+    pub rgb: Vec<(f32, f32)>,
+    pub r: Vec<(f32, f32)>,
+    pub g: Vec<(f32, f32)>,
+    pub b: Vec<(f32, f32)>,
+}
+
+impl Default for CurvePoints {
+    fn default() -> Self {
+        let id = || vec![(0.0, 0.0), (1.0, 1.0)];
+        Self {
+            rgb: id(),
+            r: id(),
+            g: id(),
+            b: id(),
+        }
+    }
+}
+
+// Not `Copy`: `Curves` carries variable-length control points.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Adjustment {
     BrightnessContrast {
         brightness: f32,
@@ -28,30 +54,35 @@ pub enum Adjustment {
         level: f32,
     },
     BlackWhite,
+    /// Tone curves (composite + per-channel). Params are not float-encodable —
+    /// the compositor uploads a LUT texture (shader kind `8`) built from these.
+    Curves(CurvePoints),
 }
 
 impl Adjustment {
     /// Shader kind id (stable; written to disk) + up to four float params.
+    /// `Curves` (kind 8) carries no float params — its LUT is uploaded separately.
     pub fn encode(&self) -> (u32, [f32; 4]) {
-        match *self {
+        match self {
             Adjustment::BrightnessContrast {
                 brightness,
                 contrast,
-            } => (1, [brightness, contrast, 0.0, 0.0]),
+            } => (1, [*brightness, *contrast, 0.0, 0.0]),
             Adjustment::Levels {
                 in_black,
                 in_white,
                 gamma,
-            } => (2, [in_black, in_white, gamma, 0.0]),
+            } => (2, [*in_black, *in_white, *gamma, 0.0]),
             Adjustment::HueSaturation {
                 hue,
                 saturation,
                 lightness,
-            } => (3, [hue, saturation, lightness, 0.0]),
+            } => (3, [*hue, *saturation, *lightness, 0.0]),
             Adjustment::Invert => (4, [0.0; 4]),
-            Adjustment::Exposure { stops } => (5, [stops, 0.0, 0.0, 0.0]),
-            Adjustment::Threshold { level } => (6, [level, 0.0, 0.0, 0.0]),
+            Adjustment::Exposure { stops } => (5, [*stops, 0.0, 0.0, 0.0]),
+            Adjustment::Threshold { level } => (6, [*level, 0.0, 0.0, 0.0]),
             Adjustment::BlackWhite => (7, [0.0; 4]),
+            Adjustment::Curves(_) => (8, [0.0; 4]),
         }
     }
 
@@ -64,28 +95,33 @@ impl Adjustment {
             Adjustment::Invert => "Invert",
             Adjustment::Threshold { .. } => "Threshold",
             Adjustment::BlackWhite => "Black & White",
+            Adjustment::Curves(_) => "Curves",
         }
     }
 
-    /// Sensible defaults for each kind (identity-ish where applicable).
-    pub const DEFAULTS: [Adjustment; 7] = [
-        Adjustment::BrightnessContrast {
-            brightness: 0.0,
-            contrast: 0.0,
-        },
-        Adjustment::Levels {
-            in_black: 0.0,
-            in_white: 1.0,
-            gamma: 1.0,
-        },
-        Adjustment::HueSaturation {
-            hue: 0.0,
-            saturation: 0.0,
-            lightness: 0.0,
-        },
-        Adjustment::Exposure { stops: 0.0 },
-        Adjustment::Invert,
-        Adjustment::Threshold { level: 0.5 },
-        Adjustment::BlackWhite,
-    ];
+    /// Sensible defaults for each kind (identity-ish where applicable). A `fn`
+    /// rather than a `const` because `Curves` holds owned control points.
+    pub fn defaults() -> Vec<Adjustment> {
+        vec![
+            Adjustment::BrightnessContrast {
+                brightness: 0.0,
+                contrast: 0.0,
+            },
+            Adjustment::Levels {
+                in_black: 0.0,
+                in_white: 1.0,
+                gamma: 1.0,
+            },
+            Adjustment::Curves(CurvePoints::default()),
+            Adjustment::HueSaturation {
+                hue: 0.0,
+                saturation: 0.0,
+                lightness: 0.0,
+            },
+            Adjustment::Exposure { stops: 0.0 },
+            Adjustment::Invert,
+            Adjustment::Threshold { level: 0.5 },
+            Adjustment::BlackWhite,
+        ]
+    }
 }
