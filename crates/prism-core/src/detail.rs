@@ -73,11 +73,11 @@ mod tests {
         let img = spike(w, h);
         let amt = vec![1.0; w * h];
         let out = blur_sharpen(&img, &amt, w, h, false);
-        let c = (1 * w + 1) * 4;
+        let c = (w + 1) * 4; // center (1,1)
         // Center mean over 3x3 = 1/9; full blur pulls center down toward it.
         assert!(out[c] < 0.2, "blur lowers spike, got {}", out[c]);
         // A neighbor rises off zero.
-        let nb = (1 * w + 0) * 4;
+        let nb = w * 4; // (0,1)
         assert!(out[nb] > 0.0, "neighbor picks up blur, got {}", out[nb]);
     }
 
@@ -87,7 +87,7 @@ mod tests {
         let img = spike(w, h);
         let amt = vec![1.0; w * h];
         let out = blur_sharpen(&img, &amt, w, h, true);
-        let c = (1 * w + 1) * 4;
+        let c = (w + 1) * 4; // center (1,1)
         // Center is already a peak; sharpen pushes it further (clamped at 1).
         assert!((out[c] - 1.0).abs() < 1e-6, "sharpen keeps peak high, got {}", out[c]);
     }
