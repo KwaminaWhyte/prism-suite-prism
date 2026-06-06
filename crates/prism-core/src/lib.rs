@@ -19,6 +19,7 @@ pub mod raster;
 pub mod shape;
 pub mod tile;
 pub mod tone;
+pub mod warp;
 
 pub use adjust::Adjustment;
 pub use blend::BlendMode;
