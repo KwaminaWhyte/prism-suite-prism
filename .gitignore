@@ -4,3 +4,4 @@ Cargo.lock
 # app sub-projects are their own git repos
 pigment/
 contour/
+pulse/
