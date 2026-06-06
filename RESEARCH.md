@@ -34,7 +34,7 @@ So Pulse = Pigment's compositor + time; Reel = the compositor + a clip/edit mode
 compositor **time-agnostic and clip-agnostic**; time and clips are each a thin layer on top. This is why
 the shared crates must never bend toward one app's UI.
 
-Sources: [SUITE.md](./SUITE.md) · pigment/RESEARCH.md §2 (tile compositing) · pulse/RESEARCH.md §1 · reel/RESEARCH.md §1
+Sources: [SUITE.md](./SUITE.md) · [Pigment RESEARCH.md §2](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) (tile compositing) · [Pulse RESEARCH.md §1](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) · [Reel RESEARCH.md §1](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md)
 
 ## 2. Shared crate matrix (current + planned)
 
@@ -57,7 +57,7 @@ README/PLAN of each app names a "coordinate before promoting" step so the owning
 that serves *all* consumers (e.g. `prism-vector` must satisfy Contour authoring **and** Pigment shape
 layers **and** Pulse masks). Never raster-couple, time-couple, or clip-couple a shared crate.
 
-Sources: prism/Cargo.toml (workspace members) · each app's Cargo.toml (path deps) · contour/RESEARCH.md §1 · pulse/RESEARCH.md §6 · reel/RESEARCH.md §2–3
+Sources: prism/Cargo.toml (workspace members) · each app's Cargo.toml (path deps) · [Contour RESEARCH.md §1](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/RESEARCH.md) · [Pulse RESEARCH.md §6](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) · [Reel RESEARCH.md §2–3](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md)
 
 ## 3. Interop mechanisms (the Adobe-parity features)
 
@@ -78,7 +78,7 @@ from the start.
 6. **Shared effects** — `prism-fx` effects authored once run in any compositing app.
 7. **Shared asset library** — brushes, gradients, LUTs, fonts, templates, swatches in a common store.
 
-Sources: [SUITE.md](./SUITE.md) §"Interop mechanisms" · pulse/RESEARCH.md §10 · reel/RESEARCH.md §1,7
+Sources: [SUITE.md](./SUITE.md) §"Interop mechanisms" · [Pulse RESEARCH.md §10](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) · [Reel RESEARCH.md §1,7](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md)
 
 ## 4. One color pipeline
 
@@ -93,7 +93,7 @@ All apps composite in **linear-light premultiplied** and manage color through `p
 The payoff: a color picked in Contour, graded in Reel, and composited in Pulse is the **same color**, and
 exports match.
 
-Sources: pigment/RESEARCH.md §2–3,9 · pulse/RESEARCH.md §5 · reel/RESEARCH.md §6 · aswf.io (OCIO/OpenEXR Rust)
+Sources: [Pigment RESEARCH.md §2–3,9](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) · [Pulse RESEARCH.md §5](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) · [Reel RESEARCH.md §6](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md) · aswf.io (OCIO/OpenEXR Rust)
 
 ## 5. Shared AI policy (`prism-ai` / `ort`)
 
@@ -114,7 +114,7 @@ One runtime, one policy across the suite:
   Pigment (Generative Fill), Contour (Generative Recolor/vectorize), Pulse (Generative Extend), and Reel
   (Generative Extend).
 
-Sources: pigment/RESEARCH.md §10 · contour/RESEARCH.md §8 · pulse/RESEARCH.md §7 · reel/RESEARCH.md §9 · github.com/pykeio/ort
+Sources: [Pigment RESEARCH.md §10](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) · [Contour RESEARCH.md §8](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/RESEARCH.md) · [Pulse RESEARCH.md §7](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/RESEARCH.md) · [Reel RESEARCH.md §9](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/RESEARCH.md) · github.com/pykeio/ort
 
 ## 6. Shared app shell & tooling
 
@@ -128,7 +128,7 @@ Sources: pigment/RESEARCH.md §10 · contour/RESEARCH.md §8 · pulse/RESEARCH.m
   `prism-fx`. Undo is per-app (tile-COW pixels in Pigment; small command stacks elsewhere) but the
   command pattern is shared.
 
-Sources: each app's Cargo.toml · pigment/RESEARCH.md §1 (eframe/egui/wgpu) · pigment/RESEARCH.md §11 (rhai/OpenFX)
+Sources: each app's Cargo.toml · [Pigment RESEARCH.md §1](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) (eframe/egui/wgpu) · [Pigment RESEARCH.md §11](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/RESEARCH.md) (rhai/OpenFX)
 
 ## 7. Current state of the suite (June 2026)
 
@@ -145,4 +145,4 @@ Each app's PLAN.md defines its road to ≥85% parity and the phase where that li
 principle suite-wide: **build the foundation that gates breadth first** (Pulse's property/compositor
 rebuild, Reel's A/V engine, Contour's undo, Pigment's retouch core), then fan out.
 
-Sources: pigment/PLAN.md · contour/PLAN.md · pulse/PLAN.md · reel/PLAN.md
+Sources: [Pigment PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/PLAN.md) · [Contour PLAN.md](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/PLAN.md) · [Pulse PLAN.md](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/PLAN.md) · [Reel PLAN.md](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/PLAN.md)
