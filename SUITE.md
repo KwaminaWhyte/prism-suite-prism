@@ -14,8 +14,8 @@ start to be reused across all four.
 |---|-----|--------------|--------|--------------------------------------|
 | 1 | **Pigment** | Photoshop | Raster image editing | greenfield (Rust/wgpu); ideas from Krita/mypaint |
 | 2 | **Contour** | Illustrator | Vector graphics | `kurbo` + `lyon` + `i_overlay`; ideas from Inkscape |
-| 3 | **Reel** | Premiere Pro | Video editing (NLE) | FFmpeg, MLT-style engine; ideas from Kdenlive |
-| 4 | **Pulse** | After Effects | Motion graphics / VFX / compositing | OpenFX, OpenColorIO, OpenEXR; ideas from Natron |
+| 3 | **Pulse** | After Effects | Motion graphics / VFX / compositing | OpenFX, OpenColorIO, OpenEXR; ideas from Natron |
+| 4 | **Reel** | Premiere Pro | Video editing (NLE) | FFmpeg, MLT-style engine; ideas from Kdenlive |
 
 ## Why a suite, not four apps
 
@@ -78,8 +78,8 @@ shared-engine + interop research).
 |---|---|---|---|---|
 | **Pigment** | Photoshop | GPU compositor, layers/blend, brush, selection/transform, adjustments/masks/filters, text/vector basics, PSD/EXR IO | ~60% | [pigment/PLAN.md](./pigment/PLAN.md) |
 | **Contour** | Illustrator | Bézier pen, shapes, pathfinder, SVG/PNG export, save | ~25% | [contour/PLAN.md](./contour/PLAN.md) |
-| **Reel** | Premiere Pro | Multitrack timeline, clip move/trim, stills preview, bin, save | ~8% | [reel/PLAN.md](./reel/PLAN.md) |
 | **Pulse** | After Effects | Comp + keyframe timeline, animated solid preview, save | ~10% | [pulse/PLAN.md](./pulse/PLAN.md) |
+| **Reel** | Premiere Pro | Multitrack timeline, clip move/trim, stills preview, bin, save | ~8% | [reel/PLAN.md](./reel/PLAN.md) |
 
 **Next levers (foundation-first — build what gates breadth, then fan out):**
 
