@@ -1,9 +1,9 @@
 # Changelog — Prism suite
 
 Suite-level changes (shared engine crates + cross-app interop). Each app keeps
-its own changelog: [pigment](./pigment/CHANGELOG.md) ·
-[contour](./contour/CHANGELOG.md) · [pulse](./pulse/CHANGELOG.md) ·
-[reel](./reel/CHANGELOG.md).
+its own changelog: [pigment](https://github.com/KwaminaWhyte/prism-suite-pigment/blob/main/CHANGELOG.md) ·
+[contour](https://github.com/KwaminaWhyte/prism-suite-contour/blob/main/CHANGELOG.md) · [pulse](https://github.com/KwaminaWhyte/prism-suite-pulse/blob/main/CHANGELOG.md) ·
+[reel](https://github.com/KwaminaWhyte/prism-suite-reel/blob/main/CHANGELOG.md).
 
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0.
 
