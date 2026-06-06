@@ -68,14 +68,30 @@ needs for raster, vector raster preview, video frames, and comp layers.
 
 ## Suite roadmap (high level)
 
-- **Now:** Pigment to MVP/Beta (see [PLAN.md](./PLAN.md)). Keep engine crates
-  app-agnostic so promotion to `prism-*` is mechanical.
-- **Next:** promote shared crates; start **Contour** (vector) — closest to
-  Pigment, reuses the compositor + color + render graph directly.
-- **Then:** **Pulse** (motion/VFX) — adds time/keyframes + OpenFX to the same
-  render graph; OpenColorIO/OpenEXR for film-grade color.
-- **Then:** **Reel** (NLE) — adds FFmpeg media engine + audio + timeline; Dynamic
-  Link to Pulse comps closes the suite loop.
+**Status (June 2026):** all four apps are scaffolded and run; the shared crates
+(`prism-core` / `prism-color` / `prism-io`) are **already promoted** to `prism/crates/`
+and consumed by every app. Each app now has a parity roadmap to **≥85% of its Adobe
+analog** — see its `PLAN.md` (and [RESEARCH.md](./RESEARCH.md) for the suite-level
+shared-engine + interop research).
+
+| App | Analog | Built today | ~Parity | Plan |
+|---|---|---|---|---|
+| **Pigment** | Photoshop | GPU compositor, layers/blend, brush, selection/transform, adjustments/masks/filters, text/vector basics, PSD/EXR IO | ~60% | [pigment/PLAN.md](./pigment/PLAN.md) |
+| **Contour** | Illustrator | Bézier pen, shapes, pathfinder, SVG/PNG export, save | ~25% | [contour/PLAN.md](./contour/PLAN.md) |
+| **Reel** | Premiere Pro | Multitrack timeline, clip move/trim, stills preview, bin, save | ~8% | [reel/PLAN.md](./reel/PLAN.md) |
+| **Pulse** | After Effects | Comp + keyframe timeline, animated solid preview, save | ~10% | [pulse/PLAN.md](./pulse/PLAN.md) |
+
+**Next levers (foundation-first — build what gates breadth, then fan out):**
+
+- **Pigment:** retouch/heal core + layer styles / smart objects (the biggest felt-parity jumps).
+- **Contour:** undo, then selection / layers / appearance & gradients.
+- **Pulse:** the foundation rebuild — typed `Property<T>` + Bézier easing + GPU compositor — before breadth.
+- **Reel:** the A/V engine — FFmpeg video decode + audio + source in/out — without it, it isn't an editor.
+
+**Shared-crate promotions still ahead** (coordinate across app owners before promoting; keep app-agnostic):
+`prism-vector` (paths/booleans/stroke — Contour + Pigment shape layers + Pulse masks), `prism-fx`
+(OpenFX-style effects/transitions — all four), `prism-media` (FFmpeg + audio — Pulse + Reel),
+`prism-ai` (`ort` runtime + on-demand models — all four), `prism-doc` (interchange + Dynamic-Link node).
 
 Each app is independently useful; the value compounds as interop lands.
 

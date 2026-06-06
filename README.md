@@ -8,7 +8,8 @@
 ---
 
 See [SUITE.md](./SUITE.md) for the full vision (shared engine, Dynamic Link,
-smart objects, common color pipeline).
+smart objects, common color pipeline) and [RESEARCH.md](./RESEARCH.md) for the
+suite-level research (shared crate matrix, interop mechanisms, color & AI policy).
 
 ## The apps
 
@@ -27,6 +28,21 @@ tiles, shape/curve/histogram), **`prism-io`** (image/psd/exr/text/export).
 rasterized layer that **re-renders automatically when the source file changes**. Edit in
 Contour → save → Pigment updates.
 
+## Planning & research
+
+Every app has a parity roadmap to **≥85% of its Adobe analog** plus cited research:
+
+| App | Plan | Research |
+|---|---|---|
+| Pigment | [PLAN.md](./pigment/PLAN.md) | [RESEARCH.md](./pigment/RESEARCH.md) · [ARCHITECTURE.md](./pigment/ARCHITECTURE.md) |
+| Contour | [PLAN.md](./contour/PLAN.md) | [RESEARCH.md](./contour/RESEARCH.md) |
+| Pulse | [PLAN.md](./pulse/PLAN.md) | [RESEARCH.md](./pulse/RESEARCH.md) |
+| Reel | [PLAN.md](./reel/PLAN.md) | [RESEARCH.md](./reel/RESEARCH.md) |
+| **Suite** | [SUITE.md](./SUITE.md) | [RESEARCH.md](./RESEARCH.md) |
+
+Each plan grounds its phases in the app's *current* code, marks done vs planned, and tags effort
+(S/M/L). Sequencing principle: build the foundation that gates breadth first, then fan out.
+
 ## Repository layout
 
 ```
@@ -39,11 +55,12 @@ prism/
 └── reel/              app #4 — video NLE (own git repo)
 ```
 
-Each app is its own Cargo workspace + git repo for now. As the shared engine
-stabilizes (`pigment-core`'s document model, tile/compositor, color, shape/text
-rasterizers), the reusable parts get promoted to suite-level `prism-*` crates
-that every app depends on — that shared core is the suite's whole architectural
-bet (see SUITE.md §"Shared foundation").
+Each app is its own Cargo workspace + git repo. The shared engine has **already been
+promoted** to suite-level `prism-*` crates in [`crates/`](./crates/) — `prism-core`'s
+document model, tile/compositor, blend, color, and shape/text rasterizers — that every app
+depends on by path. That shared core is the suite's whole architectural bet (see
+SUITE.md §"Shared foundation" and [RESEARCH.md §2](./RESEARCH.md) for the crate matrix,
+including the planned `prism-vector` / `prism-fx` / `prism-media` / `prism-ai` / `prism-doc`).
 
 ## Why a suite, not four apps
 
