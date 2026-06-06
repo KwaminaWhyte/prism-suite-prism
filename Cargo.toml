@@ -1,0 +1,27 @@
+# Prism suite — shared engine crates. Each app (pigment/, contour/, …) is its own
+# workspace that path-depends on these.
+[workspace]
+resolver = "2"
+members = ["crates/prism-color", "crates/prism-core", "crates/prism-io"]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/prism-suite/prism"
+
+[workspace.dependencies]
+glam = "0.29"
+bytemuck = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+thiserror = "2"
+prism-color = { path = "crates/prism-color" }
+prism-core = { path = "crates/prism-core" }
+
+[workspace.lints.clippy]
+needless_range_loop = "allow"
+too_many_arguments = "allow"
+field_reassign_with_default = "allow"
+
+[workspace.lints.rust]
+deprecated = "allow"
