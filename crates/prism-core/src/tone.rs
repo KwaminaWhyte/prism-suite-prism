@@ -27,12 +27,59 @@ pub fn dodge_burn(image: &[f32], amount: &[f32], w: usize, h: usize) -> Vec<f32>
     out
 }
 
+/// Saturation brush (Sponge): `amount[p] > 0` saturates, `< 0` desaturates
+/// toward the pixel's luma; magnitude in `[-1, 1]` (−1 = fully gray, +1 = double
+/// saturation). Straight RGBA (`w*h*4`), `amount` is `w*h`. Alpha unchanged.
+pub fn sponge(image: &[f32], amount: &[f32], w: usize, h: usize) -> Vec<f32> {
+    assert_eq!(image.len(), w * h * 4);
+    assert_eq!(amount.len(), w * h);
+    let mut out = image.to_vec();
+    for p in 0..w * h {
+        let a = amount[p].clamp(-1.0, 1.0);
+        if a == 0.0 {
+            continue;
+        }
+        let (r, g, b) = (out[p * 4], out[p * 4 + 1], out[p * 4 + 2]);
+        let lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        let k = 1.0 + a; // [-1,1] -> [0,2]
+        out[p * 4] = (lum + (r - lum) * k).clamp(0.0, 1.0);
+        out[p * 4 + 1] = (lum + (g - lum) * k).clamp(0.0, 1.0);
+        out[p * 4 + 2] = (lum + (b - lum) * k).clamp(0.0, 1.0);
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     fn px(rgba: [f32; 4]) -> Vec<f32> {
         rgba.to_vec()
+    }
+
+    #[test]
+    fn sponge_desaturate_to_gray() {
+        let img = px([0.8, 0.2, 0.2, 1.0]);
+        let out = sponge(&img, &[-1.0], 1, 1);
+        let lum = 0.2126 * 0.8 + 0.7152 * 0.2 + 0.0722 * 0.2;
+        for c in 0..3 {
+            assert!((out[c] - lum).abs() < 1e-5, "channel {c} -> luma");
+        }
+        assert_eq!(out[3], 1.0);
+    }
+
+    #[test]
+    fn sponge_saturate_spreads_from_luma() {
+        let img = px([0.6, 0.5, 0.4, 1.0]);
+        let out = sponge(&img, &[0.5], 1, 1);
+        // High channel rises, low channel drops (away from luma).
+        assert!(out[0] > 0.6 && out[2] < 0.4, "saturate spreads: {out:?}");
+    }
+
+    #[test]
+    fn sponge_zero_noop() {
+        let img = px([0.3, 0.6, 0.9, 0.7]);
+        assert_eq!(sponge(&img, &[0.0], 1, 1), img);
     }
 
     #[test]

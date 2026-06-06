@@ -8,6 +8,7 @@
 pub mod adjust;
 pub mod blend;
 pub mod curve;
+pub mod detail;
 pub mod document;
 pub mod fill;
 pub mod geometry;

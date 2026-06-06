@@ -14,13 +14,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 - `prism-core` — retouch primitives behind Pigment's Phase-6 tools:
   `heal::seamless_clone` (gradient-domain Poisson cloning), `heal::spot_heal`
   (auto-source blemish repair), `inpaint::content_aware_fill` (PatchMatch
-  synthesis), `tone::dodge_burn` (local lighten/darken), and `warp` (displacement-
-  field mesh warp + brush stamps, for Liquify).
+  synthesis), `tone::dodge_burn` (local lighten/darken), `tone::sponge`
+  (saturation), `detail::blur_sharpen` (local blur/sharpen), and `warp`
+  (displacement-field mesh warp + brush stamps, for Liquify).
 - `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data).
 
 ### Per-app progress (see each app's changelog)
 - **Pigment** — Curves adjustment (GPU LUT); **Phase-6 retouch core**: Clone Stamp,
-  Healing Brush, Spot Healing, Content-Aware Fill, Dodge & Burn, **Liquify**.
+  Healing Brush, Spot Healing, Content-Aware Fill, Dodge & Burn, Liquify,
+  **Detail brush** (sponge/blur/sharpen).
 - **Contour** — undo/redo; direct-select path editing; stroke options
   (caps/joins/dashes); **multi-select + Align & Distribute**.
 - **Pulse** — keyframe interpolation; graph editor; PNG image-sequence export +
