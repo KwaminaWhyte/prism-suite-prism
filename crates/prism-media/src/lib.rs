@@ -164,10 +164,9 @@ fn parse_rate(s: &str) -> f64 {
     }
 }
 
-/// Probe `path` for its container duration and first video/audio stream info via
-/// `ffprobe -v quiet -print_format json -show_format -show_streams <path>`.
-pub fn probe(path: impl AsRef<Path>) -> Result<MediaInfo, MediaError> {
-    let path = path.as_ref();
+/// Run `ffprobe -v quiet -print_format json -show_format -show_streams <path>`
+/// and parse the JSON. Shared by [`probe`] and [`probe_audio`].
+fn run_ffprobe(path: &Path) -> Result<ProbeJson, MediaError> {
     let bin = ffprobe_bin();
     let output = Command::new(&bin)
         .args(["-v", "quiet", "-print_format", "json", "-show_format", "-show_streams"])
@@ -183,19 +182,49 @@ pub fn probe(path: impl AsRef<Path>) -> Result<MediaInfo, MediaError> {
         )));
     }
 
-    let json: ProbeJson = serde_json::from_slice(&output.stdout)
-        .map_err(|e| MediaError::Parse(format!("ffprobe json: {e}")))?;
+    serde_json::from_slice(&output.stdout)
+        .map_err(|e| MediaError::Parse(format!("ffprobe json: {e}")))
+}
+
+/// The container duration (seconds) from a parsed probe, `0.0` when absent.
+fn duration_of(json: &ProbeJson) -> f64 {
+    json.format
+        .duration
+        .as_deref()
+        .and_then(|d| d.parse::<f64>().ok())
+        .unwrap_or(0.0)
+}
+
+/// Build an [`AudioInfo`] from the first audio stream in a parsed probe, if any.
+fn first_audio_info(json: &ProbeJson) -> Option<AudioInfo> {
+    json.streams
+        .iter()
+        .find(|s| s.codec_type.as_deref() == Some("audio"))
+        .map(|a| AudioInfo {
+            sample_rate: a
+                .sample_rate
+                .as_deref()
+                .and_then(|s| s.parse().ok())
+                .unwrap_or(0),
+            channels: a.channels.unwrap_or(0),
+            codec: a.codec_name.clone(),
+        })
+}
+
+/// Probe `path` for its container duration and first video/audio stream info via
+/// `ffprobe -v quiet -print_format json -show_format -show_streams <path>`.
+///
+/// Requires a video stream (it is the video-media probe; for an **audio-only**
+/// file use [`probe_audio`]).
+pub fn probe(path: impl AsRef<Path>) -> Result<MediaInfo, MediaError> {
+    let path = path.as_ref();
+    let json = run_ffprobe(path)?;
 
     let video = json
         .streams
         .iter()
-        .find(|s| s.codec_type.as_deref() == Some("video"));
-    let audio = json
-        .streams
-        .iter()
-        .find(|s| s.codec_type.as_deref() == Some("audio"));
-
-    let video = video.ok_or_else(|| MediaError::Parse("no video stream".to_string()))?;
+        .find(|s| s.codec_type.as_deref() == Some("video"))
+        .ok_or_else(|| MediaError::Parse("no video stream".to_string()))?;
 
     let width = video.width.unwrap_or(0);
     let height = video.height.unwrap_or(0);
@@ -208,31 +237,42 @@ pub fn probe(path: impl AsRef<Path>) -> Result<MediaInfo, MediaError> {
         .or_else(|| video.r_frame_rate.as_deref().map(parse_rate))
         .unwrap_or(0.0);
 
-    let duration_secs = json
-        .format
-        .duration
-        .as_deref()
-        .and_then(|d| d.parse::<f64>().ok())
-        .unwrap_or(0.0);
-
-    let audio_info = audio.map(|a| AudioInfo {
-        sample_rate: a
-            .sample_rate
-            .as_deref()
-            .and_then(|s| s.parse().ok())
-            .unwrap_or(0),
-        channels: a.channels.unwrap_or(0),
-        codec: a.codec_name.clone(),
-    });
+    let audio_info = first_audio_info(&json);
 
     Ok(MediaInfo {
-        duration_secs,
+        duration_secs: duration_of(&json),
         width,
         height,
         fps,
         has_audio: audio_info.is_some(),
         video_codec: video.codec_name.clone(),
         audio: audio_info,
+    })
+}
+
+/// Probe an **audio-only** file (or any file's audio) for its container duration
+/// and first audio stream — the audio analogue of [`probe`], which requires a
+/// video stream and so rejects a pure audio file (`.mp3`, `.wav`, …).
+///
+/// Returns a [`MediaInfo`] with `width`/`height`/`fps` zeroed and `video_codec`
+/// `None` (there is no video), `has_audio` / `audio` set from the first audio
+/// stream. Errors with [`MediaError::Parse`] when the file carries no audio
+/// stream at all.
+pub fn probe_audio(path: impl AsRef<Path>) -> Result<MediaInfo, MediaError> {
+    let path = path.as_ref();
+    let json = run_ffprobe(path)?;
+
+    let audio_info =
+        first_audio_info(&json).ok_or_else(|| MediaError::Parse("no audio stream".to_string()))?;
+
+    Ok(MediaInfo {
+        duration_secs: duration_of(&json),
+        width: 0,
+        height: 0,
+        fps: 0.0,
+        has_audio: true,
+        video_codec: None,
+        audio: Some(audio_info),
     })
 }
 
@@ -477,6 +517,59 @@ mod tests {
         // and an even (stereo-interleaved) length.
         assert!(!buf.samples.is_empty());
         assert_eq!(buf.samples.len() % 2, 0);
+
+        let _ = std::fs::remove_file(&clip);
+    }
+
+    #[test]
+    fn probe_audio_of_audio_only_file() {
+        // An audio-only file (no video stream) that `probe` rejects but
+        // `probe_audio` accepts, reporting duration + audio stream info.
+        let clip = temp_path("audio_only.wav");
+        let bin = ffmpeg_bin();
+        let made = Command::new(&bin)
+            .args([
+                "-f",
+                "lavfi",
+                "-i",
+                "sine=frequency=440:duration=1",
+                "-ar",
+                "44100",
+                "-ac",
+                "2",
+                "-y",
+            ])
+            .arg(&clip)
+            .args(["-v", "error"])
+            .status();
+        match made {
+            Ok(s) if s.success() => {}
+            _ => {
+                eprintln!("ffmpeg not available — skipping probe_audio test");
+                return;
+            }
+        }
+
+        // `probe` rejects an audio-only file (no video stream).
+        assert!(matches!(probe(&clip), Err(MediaError::Parse(_))));
+
+        // `probe_audio` accepts it: ~1s, no video geometry, an audio stream.
+        let info = match probe_audio(&clip) {
+            Ok(i) => i,
+            Err(MediaError::BinaryNotFound(_)) => {
+                let _ = std::fs::remove_file(&clip);
+                return;
+            }
+            Err(e) => panic!("probe_audio failed: {e}"),
+        };
+        assert!((info.duration_secs - 1.0).abs() < 0.2, "duration {}", info.duration_secs);
+        assert_eq!(info.width, 0);
+        assert_eq!(info.height, 0);
+        assert!(info.video_codec.is_none());
+        assert!(info.has_audio);
+        let audio = info.audio.expect("audio stream");
+        assert_eq!(audio.sample_rate, 44100);
+        assert_eq!(audio.channels, 2);
 
         let _ = std::fs::remove_file(&clip);
     }
