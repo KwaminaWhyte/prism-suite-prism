@@ -19,6 +19,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
   (displacement-field mesh warp + brush stamps, for Liquify).
 - `prism-core` — `adjust::Curves` / `CurvePoints` (tone-curve adjustment data);
   `adjust::{Vibrance, PhotoFilter, Posterize}` adjustment variants.
+- `prism-io` — `.pigment` doc model gains an optional per-layer `styles` payload
+  (`LayerMeta.styles: Option<LayerStyles>`) holding the 8 non-destructive layer
+  styles (stroke, drop/inner shadow, color/gradient overlay, outer/inner glow,
+  bevel & emboss) as plain serde data (colors `[f32;4]`/`[f32;3]`, sizes/offsets
+  in px, angles in deg — no GPU/app types). Serialized with `#[serde(default)]` +
+  `skip_serializing_if` so old docs (no `styles` key) still load and style-less
+  layers stay byte-compact; full-payload round-trip + old-doc back-compat tested.
 
 ### Per-app progress (see each app's changelog)
 - **Pigment** — Curves adjustment (GPU LUT); **Phase-6 retouch core**: Clone Stamp,

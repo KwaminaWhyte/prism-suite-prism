@@ -28,6 +28,109 @@ pub struct LayerMeta {
     pub blend: u32, // BlendMode shader id
     pub opacity: f32,
     pub visible: bool,
+    /// Optional non-destructive layer styles (stroke, shadows, glows, overlays,
+    /// bevel). Absent in old documents and in documents whose layer has no
+    /// styles; `skip_serializing_if` keeps such files byte-compatible.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub styles: Option<LayerStyles>,
+}
+
+/// Serializable bundle of a layer's non-destructive styles. Pure data — colors
+/// are straight (non-premultiplied) RGBA `[r,g,b,a]` or RGB `[r,g,b]` in 0..1
+/// linear-agnostic units matching the app's runtime style maps; pixel offsets /
+/// sizes / blur are in document pixels; angles in degrees. No app or GPU types.
+///
+/// Every field is optional and skipped when `None`, so a layer that carries only
+/// (say) a stroke serializes to `{"stroke": {...}}` with no empty keys, and a
+/// layer with no styles at all is represented as `LayerMeta.styles == None`.
+#[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
+pub struct LayerStyles {
+    /// Outer stroke.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stroke: Option<StrokeStyle>,
+    /// Drop shadow (cast outside the layer).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub drop_shadow: Option<ShadowStyle>,
+    /// Color overlay (flat fill; `color[3]` is strength).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub color_overlay: Option<ColorOverlayStyle>,
+    /// Inner shadow (cast inside the layer edges).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inner_shadow: Option<ShadowStyle>,
+    /// Outer glow.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub outer_glow: Option<GlowStyle>,
+    /// Inner glow.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inner_glow: Option<GlowStyle>,
+    /// Gradient overlay.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gradient_overlay: Option<GradientOverlayStyle>,
+    /// Bevel & Emboss (Inner Bevel).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub bevel: Option<BevelStyle>,
+}
+
+/// Outer stroke style: straight RGBA color and stroke width in document pixels.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct StrokeStyle {
+    pub color: [f32; 4],
+    /// Stroke width, document pixels.
+    pub width_px: f32,
+}
+
+/// Drop / inner shadow style: straight RGBA color, `[dx, dy]` offset in document
+/// pixels, and blur radius in document pixels.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ShadowStyle {
+    pub color: [f32; 4],
+    /// Offset `[dx, dy]`, document pixels.
+    pub offset_px: [f32; 2],
+    /// Blur radius, document pixels.
+    pub blur_px: f32,
+}
+
+/// Color overlay style: straight RGBA where `color[3]` is the overlay strength.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct ColorOverlayStyle {
+    pub color: [f32; 4],
+}
+
+/// Outer / inner glow style: straight RGBA color and glow size in document pixels.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct GlowStyle {
+    pub color: [f32; 4],
+    /// Glow size, document pixels.
+    pub size_px: f32,
+}
+
+/// Gradient overlay style: two RGBA stops, angle in degrees, and opacity (0..1).
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct GradientOverlayStyle {
+    /// Start color (RGBA).
+    pub color0: [f32; 4],
+    /// End color (RGBA).
+    pub color1: [f32; 4],
+    /// Gradient angle, degrees.
+    pub angle_deg: f32,
+    /// Overlay opacity, 0..1.
+    pub opacity: f32,
+}
+
+/// Bevel & Emboss (Inner Bevel) style: highlight and shadow RGBA colors, bevel
+/// size and soften in document pixels, light angle and altitude in degrees.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct BevelStyle {
+    pub highlight: [f32; 4],
+    pub shadow: [f32; 4],
+    /// Bevel size, document pixels.
+    pub size_px: f32,
+    /// Soften radius, document pixels.
+    pub soften_px: f32,
+    /// Light angle, degrees.
+    pub angle_deg: f32,
+    /// Light altitude, degrees.
+    pub altitude_deg: f32,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -181,6 +284,7 @@ mod tests {
                     blend: 0,
                     opacity: 1.0,
                     visible: true,
+                    styles: None,
                 },
                 LayerMeta {
                     id: 2,
@@ -188,6 +292,7 @@ mod tests {
                     blend: 3,
                     opacity: 0.5,
                     visible: false,
+                    styles: None,
                 },
             ],
         };
@@ -234,5 +339,86 @@ mod tests {
         assert_eq!(rpix[1].rgba16f, px1);
 
         let _ = std::fs::remove_file(&path);
+    }
+
+    /// A `LayerMeta` carrying a fully populated `LayerStyles` payload survives a
+    /// serde_json round-trip with every field intact.
+    #[test]
+    fn layer_styles_round_trip() {
+        let styles = LayerStyles {
+            stroke: Some(StrokeStyle {
+                color: [0.1, 0.2, 0.3, 1.0],
+                width_px: 4.5,
+            }),
+            drop_shadow: Some(ShadowStyle {
+                color: [0.0, 0.0, 0.0, 0.75],
+                offset_px: [5.0, -3.0],
+                blur_px: 8.0,
+            }),
+            color_overlay: Some(ColorOverlayStyle {
+                color: [0.8, 0.1, 0.1, 0.6],
+            }),
+            inner_shadow: Some(ShadowStyle {
+                color: [0.05, 0.05, 0.05, 0.5],
+                offset_px: [-2.0, 2.0],
+                blur_px: 3.0,
+            }),
+            outer_glow: Some(GlowStyle {
+                color: [1.0, 0.9, 0.2, 0.8],
+                size_px: 12.0,
+            }),
+            inner_glow: Some(GlowStyle {
+                color: [0.2, 0.9, 1.0, 0.7],
+                size_px: 6.0,
+            }),
+            gradient_overlay: Some(GradientOverlayStyle {
+                color0: [0.0, 0.0, 0.0, 1.0],
+                color1: [1.0, 1.0, 1.0, 1.0],
+                angle_deg: 45.0,
+                opacity: 0.9,
+            }),
+            bevel: Some(BevelStyle {
+                highlight: [1.0, 1.0, 1.0, 0.75],
+                shadow: [0.0, 0.0, 0.0, 0.75],
+                size_px: 5.0,
+                soften_px: 2.0,
+                angle_deg: 120.0,
+                altitude_deg: 30.0,
+            }),
+        };
+
+        let meta = LayerMeta {
+            id: 7,
+            name: "styled".to_string(),
+            blend: 2,
+            opacity: 0.5,
+            visible: true,
+            styles: Some(styles.clone()),
+        };
+
+        let json = serde_json::to_string(&meta).expect("serialize");
+        let back: LayerMeta = serde_json::from_str(&json).expect("deserialize");
+
+        assert_eq!(back.id, 7);
+        assert_eq!(back.name, "styled");
+        assert_eq!(back.styles, Some(styles));
+    }
+
+    /// An old document JSON without the `styles` key deserializes with
+    /// `styles == None`, and a layer that has no styles serializes without the
+    /// key at all (compact back-compat in both directions).
+    #[test]
+    fn old_doc_without_styles_key_loads() {
+        // Old-format LayerMeta JSON: no `styles` field present.
+        let old = r#"{"id":1,"name":"bg","blend":0,"opacity":1.0,"visible":true}"#;
+        let meta: LayerMeta = serde_json::from_str(old).expect("deserialize old");
+        assert!(meta.styles.is_none());
+
+        // A style-less layer must not emit a `styles` key.
+        let json = serde_json::to_string(&meta).expect("serialize");
+        assert!(
+            !json.contains("styles"),
+            "style-less layer should omit the styles key, got: {json}"
+        );
     }
 }
