@@ -90,8 +90,10 @@ shared-engine + interop research).
 
 **Shared-crate promotions still ahead** (coordinate across app owners before promoting; keep app-agnostic):
 `prism-vector` (paths/booleans/stroke — Contour + Pigment shape layers + Pulse masks), `prism-fx`
-(OpenFX-style effects/transitions — all four), `prism-media` (FFmpeg + audio — Pulse + Reel),
-`prism-ai` (`ort` runtime + on-demand models — all four), `prism-doc` (interchange + Dynamic-Link node).
+(OpenFX-style effects/transitions — all four), `prism-ai` (`ort` runtime + on-demand models — all
+four), `prism-doc` (interchange + Dynamic-Link node). **Done:** `prism-media` — shared A/V decode
+(probe + video-frame + audio decode) via the ffmpeg/ffprobe CLI; in use by Reel (video clips). Audio
+playback + encode/export still to come.
 
 Each app is independently useful; the value compounds as interop lands.
 

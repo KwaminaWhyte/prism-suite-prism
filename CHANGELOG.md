@@ -10,6 +10,29 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 ## [Unreleased]
 
 ### Added
+- **`prism-media`** — new shared A/V decode crate (the planned `prism-media`
+  promotion; co-owned with Pulse/Reel). App-agnostic (no wgpu / egui / app
+  types): probes media metadata and decodes video frames + whole audio tracks.
+  - **Backend: the ffmpeg / ffprobe CLI** (not a `-sys`/`-next` binding). Shells
+    out via `std::process::Command`, so it is version-tolerant (works with the
+    installed FFmpeg 8.x), needs no `pkg-config` / linking, and stays behind a
+    small surface so an in-process libav backend can replace it later. Binary
+    paths default to `ffmpeg`/`ffprobe` and are overridable via `PRISM_FFMPEG` /
+    `PRISM_FFPROBE`.
+  - **API**: `probe(path) -> MediaInfo` (duration / first video stream's
+    `width`×`height` + `avg_frame_rate`→fps / audio presence + `AudioInfo`) via
+    `ffprobe -print_format json -show_format -show_streams`; `decode_frame_at(path,
+    t, scale) -> VideoFrame` (8-bit straight-alpha sRGB RGBA, exactly
+    `w*h*4` bytes) via `ffmpeg -ss <t> -frames:v 1 -f rawvideo -pix_fmt rgba
+    [-vf scale]`; `decode_audio(path, sample_rate, channels) -> AudioBuffer`
+    (interleaved `f32le`, whole-file). `MediaError` (thiserror) with a dedicated
+    `BinaryNotFound` so callers degrade gracefully (never panic) when FFmpeg is
+    absent.
+  - Tests gate on FFmpeg presence (skip silently when absent, mirroring the
+    suite's GPU-test-skip convention) — they generate a `testsrc` lavfi clip in
+    a temp dir, assert probe geometry/duration/fps and native + scaled frame
+    byte counts, decode audio of a sine clip, and assert the missing-binary path
+    surfaces `BinaryNotFound`.
 - Per-app `CHANGELOG.md` files (this file + one per app) to track work over time.
 - `prism-core` — retouch primitives behind Pigment's Phase-6 tools:
   `heal::seamless_clone` (gradient-domain Poisson cloning), `heal::spot_heal`
@@ -37,7 +60,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 - **Pulse** — keyframe interpolation; graph editor; PNG image-sequence export +
   software compositor; **anchor point + layer parenting**.
 - **Reel** — source in/out + ripple/roll/slip/slide editing; transitions; per-clip
-  transform/opacity/crop + inspector; **sequence markers + work-area**.
+  transform/opacity/crop + inspector; sequence markers + work-area; nested
+  sequences; **real video decode** (`ClipSource::Video` via the new `prism-media`
+  ffmpeg-CLI bridge — frames decoded + scrubbed on the timeline).
 
 ## [0.0.1] - 2026-06-06
 

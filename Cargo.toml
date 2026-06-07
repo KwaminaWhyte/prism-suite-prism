@@ -2,7 +2,7 @@
 # workspace that path-depends on these.
 [workspace]
 resolver = "2"
-members = ["crates/prism-color", "crates/prism-core", "crates/prism-io"]
+members = ["crates/prism-color", "crates/prism-core", "crates/prism-io", "crates/prism-media"]
 
 [workspace.package]
 version = "0.0.1"
@@ -17,6 +17,7 @@ serde = { version = "1", features = ["derive"] }
 thiserror = "2"
 prism-color = { path = "crates/prism-color" }
 prism-core = { path = "crates/prism-core" }
+prism-media = { path = "crates/prism-media" }
 
 [workspace.lints.clippy]
 needless_range_loop = "allow"
