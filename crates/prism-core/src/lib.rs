@@ -12,6 +12,7 @@ pub mod detail;
 pub mod document;
 pub mod fill;
 pub mod geometry;
+pub mod gradient;
 pub mod heal;
 pub mod histogram;
 pub mod inpaint;
@@ -24,8 +25,9 @@ pub mod warp;
 
 pub use adjust::Adjustment;
 pub use blend::BlendMode;
-pub use prism_color::{self as color, Rgba};
 pub use document::Document;
 pub use geometry::{Rect, Size};
+pub use gradient::{ColorStop, Gradient, GradientType, OpacityStop};
 pub use layer::{Layer, LayerId, LayerKind, LayerTree};
+pub use prism_color::{self as color, Rgba};
 pub use tile::{Tile, TileCoord, TILE_SIZE};

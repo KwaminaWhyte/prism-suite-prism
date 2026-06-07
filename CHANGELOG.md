@@ -10,6 +10,28 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 ## [Unreleased]
 
 ### Added
+- **`prism-core::gradient`** — new shared, app-agnostic multi-stop gradient
+  primitive (used first by Pigment's gradient editor/fill; reusable by Contour's
+  gradient meshes and Pulse's ramp generators). Additive and back-compatible —
+  no existing API changed, so contour/pulse/reel still build. A `Gradient` has an
+  independent **color rail** (`ColorStop` = position + straight RGB in the
+  caller's working/linear space) and **opacity rail** (`OpacityStop` = position +
+  alpha), interpolated independently and combined (Photoshop's two-rail model).
+  Five geometries (`GradientType`: Linear, Radial, Angle, Reflected, Diamond),
+  each mapping a pixel to the gradient parameter `t` from a single `start→end`
+  drag via `GradientType::param`. `Gradient::sample(t)` returns straight RGBA;
+  `Gradient::render(start, end, w, h)` rasterizes to interleaved **premultiplied**
+  linear RGBA f32 (matching `shape.rs`), with optional **ordered (Bayer 8×8)
+  dithering** to suppress 8-bit banding — fully deterministic (no RNG),
+  toggleable, and mean-preserving. Stops need not be pre-sorted (lookups sort
+  internally) and clamp to the end stops outside the range. Helper constructors
+  (`two_color`, `foreground_to_transparent`, `Default` = black→white) and stable
+  `GradientType` id round-trip. All types derive serde, so gradients can be
+  embedded in the `.pigment` container later. 18 unit tests cover stop
+  interpolation in the working space (incl. multi-stop + unsorted), the
+  independent opacity rail, each geometry's parameterization, dither
+  determinism/presence/average-preservation, premultiplied render, and
+  ids/edge-cases; `prism-io` adds a serde round-trip test.
 - **`prism-media`** — new shared A/V decode crate (the planned `prism-media`
   promotion; co-owned with Pulse/Reel). App-agnostic (no wgpu / egui / app
   types): probes media metadata and decodes video frames + whole audio tracks.

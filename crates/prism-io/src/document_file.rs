@@ -439,6 +439,33 @@ mod tests {
         );
     }
 
+    /// The shared multi-stop `Gradient` (color + opacity stops, geometry, dither)
+    /// survives a serde_json round-trip losslessly — it serializes through the
+    /// same serde path the `.pigment` doc model uses, so gradient fills/presets
+    /// can be embedded in the container alongside styles/adjustments. Covers the
+    /// non-trivial case: 3 color stops, 3 opacity stops, a non-linear geometry.
+    #[test]
+    fn gradient_serde_round_trip() {
+        use prism_core::gradient::{ColorStop, Gradient, GradientType, OpacityStop};
+        let g = Gradient {
+            color_stops: vec![
+                ColorStop::new(0.0, [1.0, 0.0, 0.0]),
+                ColorStop::new(0.5, [0.0, 1.0, 0.0]),
+                ColorStop::new(1.0, [0.0, 0.0, 1.0]),
+            ],
+            opacity_stops: vec![
+                OpacityStop::new(0.0, 1.0),
+                OpacityStop::new(0.7, 0.3),
+                OpacityStop::new(1.0, 0.0),
+            ],
+            kind: GradientType::Radial,
+            dither: true,
+        };
+        let json = serde_json::to_string(&g).expect("serialize");
+        let back: Gradient = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(back, g);
+    }
+
     /// A `LayerMeta` carrying a fully populated `Adjustment` payload survives a
     /// serde_json round-trip with the kind + every param intact. Covers a
     /// multi-param kind (Color Balance) — the `Adjustment` enum's own
