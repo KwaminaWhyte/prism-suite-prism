@@ -13,6 +13,7 @@
 use std::io::{BufReader, BufWriter, Read, Write};
 use std::path::Path;
 
+use prism_core::Adjustment;
 use serde::{Deserialize, Serialize};
 
 /// 8-byte container magic / version tag.
@@ -33,6 +34,14 @@ pub struct LayerMeta {
     /// styles; `skip_serializing_if` keeps such files byte-compatible.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub styles: Option<LayerStyles>,
+    /// Optional non-destructive adjustment descriptor. Present iff the layer is
+    /// an adjustment layer (Curves, Levels, Color Balance, Channel Mixer, …);
+    /// stores the shared, app-agnostic [`prism_core::Adjustment`] (kind + every
+    /// param) verbatim so the adjustment round-trips losslessly. Absent in old
+    /// documents and on non-adjustment layers; `skip_serializing_if` keeps such
+    /// files byte-compatible.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub adjustment: Option<Adjustment>,
 }
 
 /// Serializable bundle of a layer's non-destructive styles. Pure data — colors
@@ -285,6 +294,7 @@ mod tests {
                     opacity: 1.0,
                     visible: true,
                     styles: None,
+                    adjustment: None,
                 },
                 LayerMeta {
                     id: 2,
@@ -293,6 +303,7 @@ mod tests {
                     opacity: 0.5,
                     visible: false,
                     styles: None,
+                    adjustment: None,
                 },
             ],
         };
@@ -394,6 +405,7 @@ mod tests {
             opacity: 0.5,
             visible: true,
             styles: Some(styles.clone()),
+            adjustment: None,
         };
 
         let json = serde_json::to_string(&meta).expect("serialize");
@@ -404,21 +416,56 @@ mod tests {
         assert_eq!(back.styles, Some(styles));
     }
 
-    /// An old document JSON without the `styles` key deserializes with
-    /// `styles == None`, and a layer that has no styles serializes without the
-    /// key at all (compact back-compat in both directions).
+    /// An old document JSON without the `styles`/`adjustment` keys deserializes
+    /// with both `None`, and a plain layer serializes without either key at all
+    /// (compact back-compat in both directions).
     #[test]
     fn old_doc_without_styles_key_loads() {
-        // Old-format LayerMeta JSON: no `styles` field present.
+        // Old-format LayerMeta JSON: no `styles` / `adjustment` fields present.
         let old = r#"{"id":1,"name":"bg","blend":0,"opacity":1.0,"visible":true}"#;
         let meta: LayerMeta = serde_json::from_str(old).expect("deserialize old");
         assert!(meta.styles.is_none());
+        assert!(meta.adjustment.is_none());
 
-        // A style-less layer must not emit a `styles` key.
+        // A plain layer must not emit a `styles` or `adjustment` key.
         let json = serde_json::to_string(&meta).expect("serialize");
         assert!(
             !json.contains("styles"),
             "style-less layer should omit the styles key, got: {json}"
         );
+        assert!(
+            !json.contains("adjustment"),
+            "non-adjustment layer should omit the adjustment key, got: {json}"
+        );
+    }
+
+    /// A `LayerMeta` carrying a fully populated `Adjustment` payload survives a
+    /// serde_json round-trip with the kind + every param intact. Covers a
+    /// multi-param kind (Color Balance) — the `Adjustment` enum's own
+    /// Serialize/Deserialize is reused verbatim, so all kinds round-trip.
+    #[test]
+    fn layer_adjustment_round_trip() {
+        let adj = Adjustment::ColorBalance {
+            shadows: [0.2, -0.1, 0.3],
+            midtones: [-0.4, 0.5, 0.0],
+            highlights: [0.1, 0.1, -0.6],
+            preserve_luminosity: false,
+        };
+        let meta = LayerMeta {
+            id: 9,
+            name: "Color Balance".to_string(),
+            blend: 0,
+            opacity: 0.8,
+            visible: true,
+            styles: None,
+            adjustment: Some(adj.clone()),
+        };
+
+        let json = serde_json::to_string(&meta).expect("serialize");
+        let back: LayerMeta = serde_json::from_str(&json).expect("deserialize");
+
+        assert_eq!(back.id, 9);
+        assert_eq!(back.name, "Color Balance");
+        assert_eq!(back.adjustment, Some(adj));
     }
 }

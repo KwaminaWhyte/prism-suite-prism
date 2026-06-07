@@ -49,6 +49,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
   in px, angles in deg — no GPU/app types). Serialized with `#[serde(default)]` +
   `skip_serializing_if` so old docs (no `styles` key) still load and style-less
   layers stay byte-compact; full-payload round-trip + old-doc back-compat tested.
+- `prism-io` — `.pigment` doc model gains an optional per-layer `adjustment`
+  payload (`LayerMeta.adjustment: Option<prism_core::Adjustment>`) that stores an
+  adjustment layer's full descriptor (kind + every param, all 14 kinds) by
+  reusing the shared `Adjustment` enum's own serde derive verbatim — so the
+  variable-length Curves control points and the Channel Mixer matrix serialize
+  unchanged, and adding adjustment kinds needs no `prism-io` change. App-agnostic
+  (just the already-shared `prism-core` type). Serialized with `#[serde(default)]`
+  + `skip_serializing_if` so old docs (no `adjustment` key) still load and
+  non-adjustment layers stay byte-compact; full-payload round-trip + old-doc
+  back-compat tested. Closes the data-loss gap where reopening a saved Pigment
+  document dropped every adjustment layer's parameters.
 
 ### Per-app progress (see each app's changelog)
 - **Pigment** — Curves adjustment (GPU LUT); **Phase-6 retouch core**: Clone Stamp,
