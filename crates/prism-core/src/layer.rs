@@ -40,6 +40,12 @@ pub struct TextDef {
     pub font_px: f32,
     pub color: [f32; 4],
     pub align: u8,
+    /// Optional font-family name (e.g. `"Arial"`). `None` selects the renderer's
+    /// default face. Absent in documents written before font selection existed;
+    /// `#[serde(default)]` deserializes such documents as `None` so they
+    /// round-trip unchanged.
+    #[serde(default)]
+    pub family: Option<String>,
 }
 
 impl Default for TextDef {
@@ -49,6 +55,7 @@ impl Default for TextDef {
             font_px: 48.0,
             color: [1.0, 1.0, 1.0, 1.0],
             align: 0,
+            family: None,
         }
     }
 }
@@ -190,5 +197,48 @@ impl LayerTree {
 
     pub fn get_mut(&mut self, id: LayerId) -> Option<&mut Layer> {
         self.layers.iter_mut().find(|l| l.id == id)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn textdef_default_family_is_none() {
+        assert_eq!(TextDef::default().family, None);
+    }
+
+    #[test]
+    fn textdef_family_round_trips() {
+        let def = TextDef {
+            family: Some("Helvetica".into()),
+            ..TextDef::default()
+        };
+        let json = serde_json::to_string(&def).expect("serialize TextDef");
+        assert!(json.contains("Helvetica"), "family must be serialized: {json}");
+        let back: TextDef = serde_json::from_str(&json).expect("deserialize TextDef");
+        assert_eq!(back.family, Some("Helvetica".into()));
+        assert_eq!(back.text, def.text);
+        assert_eq!(back.font_px, def.font_px);
+        assert_eq!(back.align, def.align);
+    }
+
+    #[test]
+    fn textdef_legacy_without_family_deserializes_to_none() {
+        // A document written before font selection existed has no `family` key.
+        let legacy = r#"{"text":"Hi","font_px":48.0,"color":[1.0,1.0,1.0,1.0],"align":0}"#;
+        let def: TextDef = serde_json::from_str(legacy).expect("deserialize legacy TextDef");
+        assert_eq!(def.family, None);
+        assert_eq!(def.text, "Hi");
+        assert_eq!(def.align, 0);
+    }
+
+    #[test]
+    fn textdef_none_family_round_trips() {
+        let def = TextDef::default();
+        let json = serde_json::to_string(&def).expect("serialize");
+        let back: TextDef = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(back.family, None);
     }
 }

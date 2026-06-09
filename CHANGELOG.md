@@ -9,6 +9,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ## [Unreleased]
 
+### Added
+- **`prism-io::text` — optional font family + family enumeration.**
+  `render_text` gains a trailing `family: Option<&str>` argument: when
+  `Some(name)` (and non-empty) it requests that face via
+  `Attrs::family(Family::Name(name))`, otherwise it keeps cosmic-text's default
+  sans-serif. Unknown/empty names degrade gracefully through cosmic-text's font
+  matching, so rendering never fails. New `available_families() -> Vec<String>`
+  enumerates the system font database (sorted, de-duplicated) so apps can
+  populate a font chooser; any name it returns is valid input to `render_text`.
+  `prism-core::layer::TextDef` gains a `family: Option<String>` field
+  (`#[serde(default)]` → `None`) so existing serialized text defs round-trip
+  unchanged (absent key deserializes to `None`). Additive and app-agnostic:
+  contour/pulse/reel still build (they don't construct `TextDef` literals). New
+  tests cover family enumeration, set-vs-default/empty-family rendering, and the
+  `TextDef` serde round-trip incl. the legacy (no-`family`) case.
+
 ## [0.1.0] - 2026-06-09
 
 ### Added
