@@ -9,6 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-06-09
+
 ### Added
 - **`prism-core::gradient`** — new shared, app-agnostic multi-stop gradient
   primitive (used first by Pigment's gradient editor/fill; reusable by Contour's
