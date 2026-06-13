@@ -9,6 +9,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ## [Unreleased]
 
+### Added
+- **`prism-io::document_file` — smart-filter stack in `LayerMeta` (additive).**
+  `LayerMeta` gains a `smart_filters: Vec<SmartFilterMeta>` field (a new pure-data
+  `SmartFilterMeta { kind: u32, params: [f32; 4], enabled: bool }`) so a layer's
+  non-destructive, re-editable filter stack round-trips in the `.pigment`
+  container. The field is `#[serde(default, skip_serializing_if = "Vec::is_empty")]`
+  — old documents (and layers with no smart filters) load and serialize exactly
+  as before, keeping the format byte-compatible. App-agnostic: the `kind`/`params`
+  encoding is owned by the consuming app (Pigment); the shared crate stores the
+  values verbatim.
+
 ## [0.2.0] - 2026-06-13
 
 ### Added

@@ -42,6 +42,27 @@ pub struct LayerMeta {
     /// files byte-compatible.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub adjustment: Option<Adjustment>,
+    /// Optional non-destructive **smart-filter stack** applied to a raster layer
+    /// on top of its stored (un-filtered) source pixels. Each entry is a filter
+    /// kind + its parameters + an enabled flag; the displayed layer is the source
+    /// with the enabled filters applied in order, re-applied whenever the stack
+    /// changes (so any filter stays editable / re-orderable / toggleable).
+    /// Absent in old documents and on layers with no smart filters;
+    /// `skip_serializing_if` keeps such files byte-compatible.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub smart_filters: Vec<SmartFilterMeta>,
+}
+
+/// One entry in a layer's serialized smart-filter stack. Pure data — no app or
+/// GPU types. `kind` is a stable app-agnostic filter id (matching the app's
+/// `SmartFilterKind` discriminant), `params` carries that filter's numeric
+/// parameters (radius / amount / levels, etc.; unused slots are 0), and
+/// `enabled` toggles the filter without removing it from the stack.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct SmartFilterMeta {
+    pub kind: u32,
+    pub params: [f32; 4],
+    pub enabled: bool,
 }
 
 /// Serializable bundle of a layer's non-destructive styles. Pure data — colors
@@ -321,6 +342,7 @@ mod tests {
                     visible: true,
                     styles: None,
                     adjustment: None,
+                smart_filters: Vec::new(),
                 },
                 LayerMeta {
                     id: 2,
@@ -330,6 +352,7 @@ mod tests {
                     visible: false,
                     styles: None,
                     adjustment: None,
+                smart_filters: Vec::new(),
                 },
             ],
             comps: vec![],
@@ -433,6 +456,7 @@ mod tests {
             visible: true,
             styles: Some(styles.clone()),
             adjustment: None,
+        smart_filters: Vec::new(),
         };
 
         let json = serde_json::to_string(&meta).expect("serialize");
@@ -513,6 +537,7 @@ mod tests {
             visible: true,
             styles: None,
             adjustment: Some(adj.clone()),
+        smart_filters: Vec::new(),
         };
 
         let json = serde_json::to_string(&meta).expect("serialize");
@@ -538,6 +563,7 @@ mod tests {
                 visible: true,
                 styles: None,
                 adjustment: None,
+            smart_filters: Vec::new(),
             }],
             comps: vec![
                 LayerCompMeta {
