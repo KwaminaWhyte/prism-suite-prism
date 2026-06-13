@@ -142,11 +142,37 @@ pub struct BevelStyle {
     pub altitude_deg: f32,
 }
 
+/// One layer's snapshotted appearance attributes within a layer comp.
+/// `blend` is the BlendMode shader id (matching [`LayerMeta::blend`]); the entry
+/// is keyed by the stable layer `id` so restore matches by id and tolerates
+/// layers being reordered, added, or removed since the comp was captured.
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LayerCompEntry {
+    pub id: u64,
+    pub blend: u32,
+    pub opacity: f32,
+    pub visible: bool,
+}
+
+/// A named layer comp: a snapshot of per-layer appearance (visibility, opacity,
+/// blend mode) the user can restore. Pure data — no app/GPU types.
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub struct LayerCompMeta {
+    pub name: String,
+    pub entries: Vec<LayerCompEntry>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DocMeta {
     pub width: u32,
     pub height: u32,
     pub layers: Vec<LayerMeta>, // bottom-to-top order
+    /// Named layer comps (snapshots of per-layer visibility/opacity/blend).
+    /// Absent in documents written before layer comps existed; `#[serde(default)]`
+    /// loads such documents as an empty list, and `skip_serializing_if` keeps
+    /// comp-free documents byte-compatible with the previous format.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub comps: Vec<LayerCompMeta>,
 }
 
 /// Raw pixel payload for one layer: linear-premultiplied RGBA16F as little-endian
@@ -306,6 +332,7 @@ mod tests {
                     adjustment: None,
                 },
             ],
+            comps: vec![],
         };
 
         let px0: Vec<u8> = (0..len).map(|i| (i % 251) as u8).collect();
@@ -494,5 +521,64 @@ mod tests {
         assert_eq!(back.id, 9);
         assert_eq!(back.name, "Color Balance");
         assert_eq!(back.adjustment, Some(adj));
+    }
+
+    /// A `DocMeta` carrying layer comps survives a serde_json round-trip with
+    /// every comp entry intact.
+    #[test]
+    fn layer_comps_round_trip() {
+        let meta = DocMeta {
+            width: 8,
+            height: 8,
+            layers: vec![LayerMeta {
+                id: 1,
+                name: "bg".to_string(),
+                blend: 0,
+                opacity: 1.0,
+                visible: true,
+                styles: None,
+                adjustment: None,
+            }],
+            comps: vec![
+                LayerCompMeta {
+                    name: "Variant A".to_string(),
+                    entries: vec![LayerCompEntry {
+                        id: 1,
+                        blend: 3,
+                        opacity: 0.5,
+                        visible: false,
+                    }],
+                },
+                LayerCompMeta {
+                    name: "Variant B".to_string(),
+                    entries: vec![LayerCompEntry {
+                        id: 1,
+                        blend: 0,
+                        opacity: 1.0,
+                        visible: true,
+                    }],
+                },
+            ],
+        };
+
+        let json = serde_json::to_string(&meta).expect("serialize");
+        let back: DocMeta = serde_json::from_str(&json).expect("deserialize");
+        assert_eq!(back.comps, meta.comps);
+    }
+
+    /// An old document JSON without the `comps` key deserializes with an empty
+    /// comps list, and a comp-free document serializes without the `comps` key
+    /// at all (compact back-compat in both directions).
+    #[test]
+    fn old_doc_without_comps_key_loads() {
+        let old = r#"{"width":4,"height":4,"layers":[]}"#;
+        let meta: DocMeta = serde_json::from_str(old).expect("deserialize old");
+        assert!(meta.comps.is_empty());
+
+        let json = serde_json::to_string(&meta).expect("serialize");
+        assert!(
+            !json.contains("comps"),
+            "comp-free document should omit the comps key, got: {json}"
+        );
     }
 }
