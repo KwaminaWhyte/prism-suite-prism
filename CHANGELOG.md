@@ -9,6 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-13
+
 ### Added
 - **`prism-io::document_file` — smart-filter stack in `LayerMeta` (additive).**
   `LayerMeta` gains a `smart_filters: Vec<SmartFilterMeta>` field (a new pure-data
