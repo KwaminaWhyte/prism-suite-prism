@@ -9,6 +9,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); pre-1.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-13
+
 ### Added
 - **`prism-io::text` — optional font family + family enumeration.**
   `render_text` gains a trailing `family: Option<&str>` argument: when
