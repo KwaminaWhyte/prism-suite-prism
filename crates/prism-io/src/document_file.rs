@@ -58,11 +58,19 @@ pub struct LayerMeta {
 /// `SmartFilterKind` discriminant), `params` carries that filter's numeric
 /// parameters (radius / amount / levels, etc.; unused slots are 0), and
 /// `enabled` toggles the filter without removing it from the stack.
+///
+/// `params_ext` is an **additive** overflow slot for filter kinds that bundle
+/// more than four parameters (e.g. Camera Raw's white-balance / tone / vibrance
+/// / vignette controls). It is `None` for the original four-param kinds and for
+/// documents written before it existed, so `skip_serializing_if` keeps those
+/// files byte-compatible; a loader that doesn't understand it simply ignores it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SmartFilterMeta {
     pub kind: u32,
     pub params: [f32; 4],
     pub enabled: bool,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub params_ext: Option<[f32; 12]>,
 }
 
 /// Serializable bundle of a layer's non-destructive styles. Pure data — colors
